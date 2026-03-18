@@ -2,10 +2,10 @@ services:
   - type: web
     name: nameswipe
     env: node
+    region: oregon
+    plan: free
     buildCommand: npm install && npm run build
     startCommand: npm start
     envVars:
       - key: NODE_ENV
         value: production
-      - key: PORT
-        value: 10000
