@@ -25,7 +25,7 @@ declare global {
 }
 
 // ── Types ──────────────────────────────────────────────────────
-interface NameEntry { name: string; gender: "boy" | "girl"; }
+interface NameEntry { name: string; gender: "boy" | "girl"; meaning?: string; }
 interface LikedName extends NameEntry { starred: boolean; }
 
 // ── Name data cache ────────────────────────────────────────────
@@ -34,8 +34,8 @@ async function loadNames(): Promise<NameEntry[]> {
   if (namesCache) return namesCache;
   const res = await fetch("/names.json");
   const data = await res.json();
-  const boys: NameEntry[]  = data.boys.map((n: string) => ({ name: n, gender: "boy"  as const }));
-  const girls: NameEntry[] = data.girls.map((n: string) => ({ name: n, gender: "girl" as const }));
+  const boys: NameEntry[]  = data.boys.map((n: any) => ({ name: typeof n === 'string' ? n : n.name, meaning: typeof n === 'string' ? '' : (n.meaning || ''), gender: "boy"  as const }));
+  const girls: NameEntry[] = data.girls.map((n: any) => ({ name: typeof n === 'string' ? n : n.name, meaning: typeof n === 'string' ? '' : (n.meaning || ''), gender: "girl" as const }));
   // Shuffle interleaved
   const all = [...boys, ...girls];
   for (let i = all.length - 1; i > 0; i--) {
@@ -488,6 +488,13 @@ export default function RoomPage() {
                     }`}>
                       {currentEntry.gender === "boy" ? "👦 Boy" : "👧 Girl"}
                     </div>
+                  )}
+
+                  {/* Name meaning */}
+                  {currentEntry.meaning && (
+                    <p className="text-center text-sm text-muted-foreground px-4 leading-relaxed italic max-w-[260px]">
+                      {currentEntry.meaning}
+                    </p>
                   )}
                 </div>
               </>
