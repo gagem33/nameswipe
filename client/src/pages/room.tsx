@@ -230,7 +230,7 @@ export default function RoomPage() {
     setTimeout(() => {
       setDeckPos(p => p + 1);
       setAnimating(false);
-    }, 360);
+    }, 180);
   }, [animating, currentEntry, hintShown, swipeMutation]);
 
   // Undo
@@ -451,8 +451,9 @@ export default function RoomPage() {
 
                 {/* Top card */}
                 <div
+                  key={`${currentEntry.name}-${currentEntry.gender}-${deckPos}`}
                   ref={topCardRef}
-                  className="absolute inset-x-0 card-shadow rounded-3xl bg-card border border-border flex flex-col items-center justify-center gap-4 p-8 cursor-grab active:cursor-grabbing select-none"
+                  className="absolute inset-x-0 card-shadow rounded-3xl bg-card border border-border flex flex-col items-center justify-center gap-4 p-8 cursor-grab active:cursor-grabbing select-none pop-in"
                   style={{ zIndex: 5, touchAction: "none" }}
                   onMouseDown={onDragStart}
                   onMouseMove={onDragMove}

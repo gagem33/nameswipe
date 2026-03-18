@@ -112,9 +112,9 @@
   75% { transform: scale(1.15); }
 }
 
-.swipe-out-right { animation: swipeRight 0.35s cubic-bezier(0.25,1,0.5,1) forwards; }
-.swipe-out-left  { animation: swipeLeft  0.35s cubic-bezier(0.25,1,0.5,1) forwards; }
-.swipe-out-up    { animation: swipeUp    0.35s cubic-bezier(0.25,1,0.5,1) forwards; }
+.swipe-out-right { animation: swipeRight 0.18s cubic-bezier(0.4,0,1,1) forwards; }
+.swipe-out-left  { animation: swipeLeft  0.18s cubic-bezier(0.4,0,1,1) forwards; }
+.swipe-out-up    { animation: swipeUp    0.18s cubic-bezier(0.4,0,1,1) forwards; }
 .pop-in          { animation: popIn 0.3s cubic-bezier(0.16,1,0.3,1) both; }
 .match-pop       { animation: matchPop 0.5s cubic-bezier(0.16,1,0.3,1); }
 .heart-beat      { animation: heartBeat 0.6s ease-in-out; }
