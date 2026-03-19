@@ -3,6 +3,9 @@ import { createServer } from "http";
 import { storage } from "./storage";
 import { insertSwipeSchema } from "@shared/schema";
 
+// The one shared room — no codes needed
+const SHARED_ROOM_ID = "COUPLE";
+
 // SSE clients: roomId -> Set of Response objects
 const sseClients = new Map<string, Set<Response>>();
 
@@ -17,19 +20,18 @@ function broadcast(roomId: string, event: string, data: unknown) {
 
 export async function registerRoutes(httpServer: ReturnType<typeof createServer>, app: Express) {
 
-  // ── Rooms ──────────────────────────────────────────────────
-  // Create a new room
-  app.post("/api/rooms", async (req, res) => {
-    // Generate a 6-char alphanumeric code
-    const code = Math.random().toString(36).substring(2, 8).toUpperCase();
-    const room = await storage.createRoom(code);
-    res.json(room);
-  });
+  // Auto-create the shared room on startup
+  storage.createRoom(SHARED_ROOM_ID);
 
-  // Check if room exists
+  // ── Rooms ──────────────────────────────────────────────────
+  // Get the shared room (always exists)
   app.get("/api/rooms/:id", async (req, res) => {
     const room = await storage.getRoom(req.params.id.toUpperCase());
-    if (!room) return res.status(404).json({ error: "Room not found" });
+    if (!room) {
+      // Auto-create if missing (e.g. after server restart)
+      const newRoom = await storage.createRoom(req.params.id.toUpperCase());
+      return res.json(newRoom);
+    }
     res.json(room);
   });
 
@@ -42,9 +44,9 @@ export async function registerRoutes(httpServer: ReturnType<typeof createServer>
     const data = parsed.data;
     data.roomId = data.roomId.toUpperCase();
 
-    // Ensure room exists
-    const room = await storage.getRoom(data.roomId);
-    if (!room) return res.status(404).json({ error: "Room not found" });
+    // Auto-create room if needed (handles server restarts)
+    let room = await storage.getRoom(data.roomId);
+    if (!room) room = await storage.createRoom(data.roomId);
 
     const swipe = await storage.addSwipe(data);
 
@@ -80,17 +82,10 @@ export async function registerRoutes(httpServer: ReturnType<typeof createServer>
   // Get mutual matches
   app.get("/api/rooms/:id/matches", async (req, res) => {
     const roomId = req.params.id.toUpperCase();
-    const room = await storage.getRoom(roomId);
-    if (!room) return res.status(404).json({ error: "Room not found" });
+    let room = await storage.getRoom(roomId);
+    if (!room) room = await storage.createRoom(roomId);
     const matches = await storage.getMutualMatches(roomId);
     res.json(matches);
-  });
-
-  // Get room members count
-  app.get("/api/rooms/:id/members", async (req, res) => {
-    const roomId = req.params.id.toUpperCase();
-    const userIds = await storage.getRoomUserIds(roomId);
-    res.json({ count: userIds.length, userIds });
   });
 
   // ── SSE — Real-time updates ────────────────────────────────
